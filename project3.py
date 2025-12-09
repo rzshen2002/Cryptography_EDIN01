@@ -2,9 +2,7 @@ import re
 import time
 
 
-# ==========================
-# 1. Load Keystream Function
-# ==========================
+# Load Keystream Function
 
 def load_keystream(path):
     print(f"[INFO] Loading keystream from file: {path}")
@@ -23,24 +21,16 @@ def load_keystream(path):
     return bits
 
 
-# ============================================
-# 2. LFSR Sequence Generation + Helper Functions
-# ============================================
+# LFSR Sequence Generation + Helper Functions
 
 def int_to_state(x, L):
-    """
-    Converts integer x to an L-bit list [u0, u1, ..., u_{L-1}]
-    """
-    return [(x >> (L - 1 - i)) & 1 for i in range(L)]
+
+    return [(x >> (L - 1 - i)) & 1 for i in range(L)] #Converts integer x to an L-bit list [u0, u1, ..., u_{L-1}]
 
 
 def generate_lfsr_sequence(initial_state, taps, N):
-    """
-    - taps: list of feedback positions
-    - N: desired sequence length
-
-    Implements: u[i] = XOR of u[i - t] for t in taps
-    """
+    # taps: list of feed back positions (according to the connection polynomial)
+    # N: sequence length
     L = len(initial_state)
     if N <= L:
         return initial_state[:N]
@@ -57,44 +47,22 @@ def generate_lfsr_sequence(initial_state, taps, N):
 
 
 def hamming_distance(a, b):
-    """
-    Returns the Hamming distance between two bit lists a and b.
-    Only compares up to the minimum length.
-    """
     return sum((x ^ y) for x, y in zip(a, b))
 
 
 def compute_p_star(candidate_seq, z):
-    """
-    Computes p* = 1 - d_H(candidate_seq, z) / N,
-    the correlation estimate between candidate LFSR output and keystream.
-    """
+    # correlation estimate p* = 1 - d_H(candidate_seq, z) / N
     N = min(len(candidate_seq), len(z))
     d = hamming_distance(candidate_seq[:N], z[:N])
     return 1.0 - d / N
 
 
-# ================================================
-# 3. Core Correlation Attack for a Single LFSR
-# ================================================
+
+#  Core Correlation Attack for a Single LFSR
+
 
 def correlation_attack_one_lfsr(z, L, taps, max_states=None, use_prefix=None, lfsr_name=""):
-    """
-    Performs a correlation attack against one LFSR.
 
-    Parameters:
-    - z: observed keystream (list of 0/1)
-    - L: length of the LFSR
-    - taps: feedback tap positions
-    - max_states: optional limit on number of states to test
-                  if None, tests all 2^L states
-    - use_prefix: optional limit on number of keystream bits used
-    - lfsr_name: descriptive label ("LFSR 1", etc.)
-
-    Returns:
-    - best_state_bits: the recovered initial state bits
-    - best_p_star: correlation score
-    """
     N_total = len(z)
     if use_prefix is not None:
         N = min(use_prefix, N_total)
@@ -163,18 +131,16 @@ def correlation_attack_one_lfsr(z, L, taps, max_states=None, use_prefix=None, lf
     return best_state_bits, best_p_star
 
 
-# ======================================
-# 4. Main Routine: Recover Key K
-# ======================================
+# Main Routine: Recover Key K
 
 def main():
-    # ---- (1) Load keystream ----
+    # Load keystream
     FILE_PATH = "task15.txt"   # Input file containing the provided keystream
     z = load_keystream(FILE_PATH)
 
     print(f"[INFO] Keystream length N = {len(z)} bits\n")
 
-    # ---- (2) Define LFSR parameters based on the assignment PDF ----
+    # Define LFSR parameters based on the assignment PDF
     # Feedback polynomials:
     # C1(z) = 1 + z^-1 + z^-2 + z^-4 + z^-6 + z^-7 + z^-10 + z^-11 + z^-13
     # C2(z) = 1 + z^-2 + z^-4 + z^-6 + z^-7 + z^-10 + z^-11 + z^-13 + z^-15
@@ -188,7 +154,7 @@ def main():
     # Use all keystream bits (193 bits), unless shortened for debugging
     USE_PREFIX = None
 
-    # ---- (3) Perform correlation attack on each LFSR ----
+    # Perform correlation attack on each LFSR
     recovered_key = {}
 
     print("[INFO] ================================================")
@@ -215,7 +181,7 @@ def main():
             "p_star": best_p_star
         }
 
-    # ---- (4) Output final recovered key K = (K1, K2, K3) ----
+    # Output final recovered key K = (K1, K2, K3)
     print("\n[INFO] =================================================")
     print("[INFO] Final recovered key K = (K1, K2, K3)")
     print("[INFO] =================================================\n")
