@@ -139,16 +139,6 @@ def correlation_attack_one_lfsr(z, L, taps, max_states=None, use_prefix=None, lf
             best_p_star = p_star
             best_state_bits = init_state
 
-        # Print periodic progress
-        if (s + 1) % progress_interval == 0 or s == max_state_value - 1:
-            elapsed = time.time() - start_time
-            percent = 100.0 * (s + 1) / max_state_value
-            print(
-                f"[PROGRESS] {lfsr_name}: "
-                f"checked {s+1}/{max_state_value} states "
-                f"({percent:.2f}%), elapsed {elapsed:.2f} s, "
-                f"current best p* = {best_p_star:.4f}"
-            )
 
     elapsed_total = time.time() - start_time
     print(f"\n[INFO] Finished correlation attack on {lfsr_name}.")
