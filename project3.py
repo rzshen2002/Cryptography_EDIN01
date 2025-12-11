@@ -13,18 +13,12 @@ def load_keystream(path):
     bits = [int(ch) for ch in re.findall(r"[01]", data)]
     if not bits:
         raise ValueError("[ERROR] No bits (0/1) found in file!")
-
-    print(f"[INFO] Total number of bits read: {len(bits)}")
-    preview = "".join(str(b) for b in bits[:60])
-    print(f"[INFO] First up to 60 bits of keystream: {preview}")
     print("[INFO] Keystream successfully loaded.\n")
     return bits
 
 
 # LFSR Sequence Generation + Helper Functions
-
 def int_to_state(x, L):
-
     return [(x >> (L - 1 - i)) & 1 for i in range(L)] #Converts integer x to an L-bit list [u0, u1, ..., u_{L-1}]
 
 
@@ -60,7 +54,6 @@ def compute_p_star(candidate_seq, z):
 
 #  Core Correlation Attack for a Single LFSR
 
-
 def correlation_attack_one_lfsr(z, L, taps, max_states=None, use_prefix=None, lfsr_name=""):
 
     N_total = len(z)
@@ -78,8 +71,6 @@ def correlation_attack_one_lfsr(z, L, taps, max_states=None, use_prefix=None, lf
 
     print(f"[INFO] ================================================")
     print(f"[INFO] Starting correlation attack on {lfsr_name}")
-    print(f"[INFO] LFSR length L = {L}")
-    print(f"[INFO] Feedback taps  = {taps}")
     print(f"[INFO] Search space   = {max_state_value} candidate states (out of 2^{L})")
     print(f"[INFO] Using first N  = {N} keystream bits for correlation.\n")
 
@@ -87,11 +78,6 @@ def correlation_attack_one_lfsr(z, L, taps, max_states=None, use_prefix=None, lf
     best_state_bits = None
 
     start_time = time.time()
-
-    # Progress print interval
-    progress_interval = 1000
-    if max_state_value <= 5000:
-        progress_interval = 500
 
     for s in range(max_state_value):
         # Convert integer to L-bit initial state
@@ -161,7 +147,7 @@ def main():
             z,
             L=L,
             taps=taps,
-            max_states=None,     # Set to e.g. 50000 for quick testing
+            max_states=None,
             use_prefix=USE_PREFIX,
             lfsr_name=name
         )
@@ -172,9 +158,9 @@ def main():
         }
 
     # Output final recovered key K = (K1, K2, K3)
-    print("\n[INFO] =================================================")
-    print("[INFO] Final recovered key K = (K1, K2, K3)")
-    print("[INFO] =================================================\n")
+    print("\n \t=================================================")
+    print(" \t Final recovered key K = (K1, K2, K3)")
+    print(" \t=================================================\n")
 
     for j in [1, 2, 3]:
         state_bits = recovered_key[j]["state_bits"]
@@ -186,10 +172,6 @@ def main():
         print(f"         Initial state bits = {state_bits}")
         print(f"         Initial state (int)= {state_int}")
         print(f"         Best p*            = {p_star:.6f}\n")
-
-    print("[INFO] Correlation attack on all three LFSRs completed.")
-    print("[INFO] You can now use these initial states as the key K.")
-
 
 if __name__ == "__main__":
     main()
